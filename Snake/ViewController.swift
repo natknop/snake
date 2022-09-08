@@ -7,6 +7,31 @@
 
 import UIKit
 
+extension UIImage {
+    func rotate(radians: Float) -> UIImage? {
+        var newSize = CGRect(origin: CGPoint.zero, size: self.size).applying(CGAffineTransform(rotationAngle: CGFloat(radians))).size
+        // Trim off the extremely small float value to prevent core graphics from rounding it up
+        newSize.width = floor(newSize.width)
+        newSize.height = floor(newSize.height)
+
+        UIGraphicsBeginImageContextWithOptions(newSize, false, self.scale)
+        let context = UIGraphicsGetCurrentContext()!
+
+        // Move origin to middle
+        context.translateBy(x: newSize.width/2, y: newSize.height/2)
+        // Rotate around middle
+        context.rotate(by: CGFloat(radians))
+        // Draw the image at its center
+        self.draw(in: CGRect(x: -self.size.width/2, y: -self.size.height/2, width: self.size.width, height: self.size.height))
+
+        let newImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+
+        return newImage
+    }
+}
+
+
 enum SnakePartType{
     case HEAD
     case BODY
@@ -35,6 +60,32 @@ class SnakePart {
         movingDirection = direction
         nextSnakePart = nextPart
         relativePosition = pos
+    }
+    
+    func genNewPosition() -> [CGFloat]{
+        var currentPosition = relativePosition
+        switch movingDirection{
+        case .RIGHT:
+            currentPosition[0] += 1
+        case .DOWN:
+            currentPosition[1] += 1
+        case .LEFT:
+            currentPosition[0] -= 1
+        case .TOP:
+            currentPosition[1] -= 1
+        case .none:
+            break
+        }
+        return currentPosition
+    }
+    
+    func move(previousPartDirection prevPartDir: MovingDirection){
+        relativePosition = genNewPosition()
+        let prevDir = movingDirection!
+        movingDirection = prevPartDir
+        if nextSnakePart != nil{
+            nextSnakePart!.move(previousPartDirection: prevDir)
+        }
     }
 }
 
@@ -151,10 +202,26 @@ class ViewController: UIViewController {
         case .HEAD:
             snakePartImage = snakeHeadImage
         case .none:
-            snakePartImage = nil
-        default:
+            break
+        }
+        
+        guard snakePartImage != nil else{
+            return nil
+        }
+        
+        switch snakePart.movingDirection{
+        case .RIGHT:
+            break
+        case .DOWN:
+            snakePartImage = snakePartImage!.rotate(radians: .pi/2)
+        case .LEFT:
+            snakePartImage = snakePartImage!.rotate(radians: .pi)
+        case .TOP:
+            snakePartImage = snakePartImage!.rotate(radians: -1 * (.pi/2))
+        case .none:
             snakePartImage = nil
         }
+        
         
         return snakePartImage
     }
@@ -201,23 +268,35 @@ class ViewController: UIViewController {
     
     
     @IBAction func topMoveTapped(_ sender: Any) {
-        gameField.image = snakeHeadImage
-        print("Top move tapped!")
+        if snake.movingDirection != .DOWN{
+            snake.movingDirection = .TOP
+            snake.move(previousPartDirection: MovingDirection.TOP)
+            drawGameField()
+        }
     }
     
     @IBAction func leftMoveTapped(_ sender: Any) {
-        gameField.image = snakeTailImage
-        print("Left move tapped!")
+        if snake.movingDirection != .RIGHT{
+            snake.movingDirection = .LEFT
+            snake.move(previousPartDirection: MovingDirection.LEFT)
+            drawGameField()
+        }
     }
     
     @IBAction func rightMoveTapped(_ sender: Any) {
-        gameField.image = snakeBodyImage
-        print("Right move tapped!")
+        if snake.movingDirection != .LEFT{
+            snake.movingDirection = .RIGHT
+            snake.move(previousPartDirection: MovingDirection.RIGHT)
+            drawGameField()
+        }
     }
     
     @IBAction func downMoveTapped(_ sender: Any) {
-        gameField.image = fieldBackground
-        print("Down move tapped!")
+        if snake.movingDirection != .TOP{
+            snake.movingDirection = .DOWN
+            snake.move(previousPartDirection: MovingDirection.DOWN)
+            drawGameField()
+        }
     }
     
 }
