@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="20037" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="20020"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--View Controller-->
+        <scene sceneID="tne-QT-ifu">
+            <objects>
+                <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="Snake" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="3mO-30-4sL">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" insetsLayoutMarginsFromSafeArea="NO" image="Snake logo 2" translatesAutoresizingMaskIntoConstraints="NO" id="4Dv-Wu-MYv" userLabel="logo">
+                                <rect key="frame" x="10" y="10" width="355" height="130"/>
+                            </imageView>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="zvM-qL-o58" userLabel="game_field">
+                                <rect key="frame" x="10" y="150" width="355" height="367"/>
+                            </imageView>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="6wq-4K-mdS">
+                                <rect key="frame" x="127" y="529" width="121" height="133"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="T3p-jk-Kr7" userLabel="top_button">
+                                        <rect key="frame" x="38" y="0.0" width="45.5" height="31"/>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="filled" image="arrow.up.square" catalog="system">
+                                            <color key="baseBackgroundColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        </buttonConfiguration>
+                                        <connections>
+                                            <action selector="topMoveTapped:" destination="BYZ-38-t0r" eventType="touchUpInside" id="BZ3-1C-UhY"/>
+                                        </connections>
+                                    </button>
+                                    <stackView opaque="NO" contentMode="scaleToFill" spacing="30" translatesAutoresizingMaskIntoConstraints="NO" id="Goc-Q2-MdK">
+                                        <rect key="frame" x="0.0" y="51" width="121" height="31"/>
+                                        <subviews>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="77d-uq-hrl" userLabel="left_button">
+                                                <rect key="frame" x="0.0" y="0.0" width="45.5" height="31"/>
+                                                <state key="normal" title="Button"/>
+                                                <buttonConfiguration key="configuration" style="filled" image="arrow.left.square" catalog="system">
+                                                    <color key="baseBackgroundColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                </buttonConfiguration>
+                                                <connections>
+                                                    <action selector="leftMoveTapped:" destination="BYZ-38-t0r" eventType="touchUpInside" id="bqh-XP-e8r"/>
+                                                </connections>
+                                            </button>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="c7e-Kc-SAe" userLabel="right_button">
+                                                <rect key="frame" x="75.5" y="0.0" width="45.5" height="31"/>
+                                                <state key="normal" title="Button"/>
+                                                <buttonConfiguration key="configuration" style="filled" image="arrow.right.square" catalog="system">
+                                                    <color key="baseBackgroundColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                </buttonConfiguration>
+                                                <connections>
+                                                    <action selector="rightMoveTapped:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Wy5-jw-mQn"/>
+                                                </connections>
+                                            </button>
+                                        </subviews>
+                                    </stackView>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="MNx-iB-NsR" userLabel="down_button">
+                                        <rect key="frame" x="38" y="102" width="45.5" height="31"/>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="filled" image="arrow.down.square" catalog="system">
+                                            <color key="baseBackgroundColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        </buttonConfiguration>
+                                        <connections>
+                                            <action selector="downMoveTapped:" destination="BYZ-38-t0r" eventType="touchUpInside" id="dgz-ID-oDe"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                                <variation key="heightClass=compact" axis="horizontal"/>
+                            </stackView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="SPM-Ur-r1K"/>
+                        <color key="backgroundColor" red="0.21987802649999999" green="0.29447941620000001" blue="0.1475299232" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                        <constraints>
+                            <constraint firstItem="4Dv-Wu-MYv" firstAttribute="centerX" secondItem="3mO-30-4sL" secondAttribute="centerX" id="0nq-UC-LMI"/>
+                            <constraint firstItem="4Dv-Wu-MYv" firstAttribute="top" secondItem="SPM-Ur-r1K" secondAttribute="top" constant="10" id="6wl-R6-XLT"/>
+                            <constraint firstItem="zvM-qL-o58" firstAttribute="centerX" secondItem="3mO-30-4sL" secondAttribute="centerX" id="JSe-tc-Mcd"/>
+                            <constraint firstItem="zvM-qL-o58" firstAttribute="centerY" secondItem="3mO-30-4sL" secondAttribute="centerY" id="Zrm-6c-IvC"/>
+                            <constraint firstItem="4Dv-Wu-MYv" firstAttribute="leading" secondItem="SPM-Ur-r1K" secondAttribute="leading" constant="10" id="b3I-yy-usF"/>
+                            <constraint firstItem="SPM-Ur-r1K" firstAttribute="bottom" secondItem="6wq-4K-mdS" secondAttribute="bottom" constant="5" id="bk9-3i-ASY"/>
+                            <constraint firstItem="zvM-qL-o58" firstAttribute="leading" secondItem="SPM-Ur-r1K" secondAttribute="leading" constant="10" id="f76-3z-5K6">
+                                <variation key="heightClass=compact-widthClass=regular" constant="10"/>
+                            </constraint>
+                            <constraint firstItem="zvM-qL-o58" firstAttribute="top" relation="lessThanOrEqual" secondItem="SPM-Ur-r1K" secondAttribute="top" constant="150" id="m79-QR-1CI">
+                                <variation key="heightClass=compact" constant="70"/>
+                            </constraint>
+                            <constraint firstItem="6wq-4K-mdS" firstAttribute="centerX" secondItem="SPM-Ur-r1K" secondAttribute="centerX" id="mWa-Mv-8j9"/>
+                            <constraint firstItem="zvM-qL-o58" firstAttribute="top" secondItem="4Dv-Wu-MYv" secondAttribute="bottom" constant="10" id="sPs-Ll-iVF"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="gameField" destination="zvM-qL-o58" id="RIS-ia-CmJ"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="71" y="78"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="Snake logo 2" width="412" height="349"/>
+        <image name="arrow.down.square" catalog="system" width="128" height="114"/>
+        <image name="arrow.left.square" catalog="system" width="128" height="114"/>
+        <image name="arrow.right.square" catalog="system" width="128" height="114"/>
+        <image name="arrow.up.square" catalog="system" width="128" height="114"/>
+    </resources>
+</document>
