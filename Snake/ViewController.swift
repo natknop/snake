@@ -32,6 +32,11 @@ extension UIImage {
 }
 
 
+struct Point: Hashable{
+    let x: CGFloat
+    let y: CGFloat
+}
+
 enum SnakePartType{
     case HEAD
     case BODY
@@ -81,13 +86,19 @@ class SnakePart {
         return currentPosition
     }
     
-    func move(previousPartDirection prevPartDir: MovingDirection){
-        relativePosition = genNewPosition()
+    func move(previousPartDirection prevPartDir: MovingDirection) -> [CGFloat]{
+        let currentPosition = relativePosition
         let prevDir = movingDirection!
+        var tailPosition: [CGFloat] = []
+        
+        relativePosition = genNewPosition()
         movingDirection = prevPartDir
         if nextSnakePart != nil{
-            nextSnakePart!.move(previousPartDirection: prevDir)
+            tailPosition = nextSnakePart!.move(previousPartDirection: prevDir)
+        }else{
+            tailPosition = currentPosition
         }
+        return tailPosition
     }
 }
 
@@ -101,8 +112,11 @@ class ViewController: UIViewController {
     var snakeHeadImage: UIImage!
     var snakeBodyImage: UIImage!
     var snakeTailImage: UIImage!
+    var snakePositions: Set<Point>!
     
     var snake: SnakePart!
+    
+    var isGameRunning: Bool = false
     
     @IBOutlet weak var gameField: UIImageView!
     
@@ -187,6 +201,10 @@ class ViewController: UIViewController {
             movingDirection: MovingDirection.RIGHT,
             nextSnakePart: snakeTail
         )
+        snakePositions = Set([
+            Point(x: snakeTail.relativePosition[0], y: snakeTail.relativePosition[1]),
+            Point(x: snake.relativePosition[0], y: snake.relativePosition[1])
+        ])
     }
     
     func initFood(){
@@ -259,7 +277,18 @@ class ViewController: UIViewController {
     }
     
     func updateField(){
-        snake.move(previousPartDirection: snake.movingDirection!)
+        let tailPreviousPosition: [CGFloat] = snake.move(previousPartDirection: snake.movingDirection!)
+        let tailPrevPositionPoint: Point = Point(x: tailPreviousPosition[0], y: tailPreviousPosition[1])
+        snakePositions.remove(tailPrevPositionPoint)
+        
+        let headPositionPoint: Point = Point(x: snake.relativePosition[0], y: snake.relativePosition[1])
+        if snakePositions.contains(headPositionPoint){
+            isGameRunning = false
+        }
+        else{
+            snakePositions.insert(headPositionPoint)
+        }
+        
         drawGameField()
     }
     
@@ -273,32 +302,44 @@ class ViewController: UIViewController {
         drawGameField()
     }
     
-    @IBAction func topMoveTapped(_ sender: Any) {
-        if snake.movingDirection != .DOWN{
-            snake.movingDirection = .TOP
+    func runGame(){
+        var workItem: DispatchWorkItem? = DispatchWorkItem {
+            while self.isGameRunning{
+                DispatchQueue.main.async { self.updateField() }
+                Thread.sleep(forTimeInterval: 1)
+            }
         }
-        updateField()
+            
+        //Start the work item
+        if(workItem != nil) {
+            DispatchQueue.global().async(execute: workItem!)
+        }
+    }
+    
+    func processTapping(currentDir: MovingDirection, oppositeDir: MovingDirection){
+        if snake.movingDirection != oppositeDir{
+            snake.movingDirection = currentDir
+        }
+        if isGameRunning != true {
+            isGameRunning = true
+            runGame()
+        }
+    }
+    
+    @IBAction func topMoveTapped(_ sender: Any) {
+        processTapping(currentDir: .TOP, oppositeDir: .DOWN)
     }
     
     @IBAction func leftMoveTapped(_ sender: Any) {
-        if snake.movingDirection != .RIGHT{
-            snake.movingDirection = .LEFT
-        }
-        updateField()
+        processTapping(currentDir: .LEFT, oppositeDir: .RIGHT)
     }
     
     @IBAction func rightMoveTapped(_ sender: Any) {
-        if snake.movingDirection != .LEFT{
-            snake.movingDirection = .RIGHT
-        }
-        updateField()
+        processTapping(currentDir: .RIGHT, oppositeDir: .LEFT)
     }
     
     @IBAction func downMoveTapped(_ sender: Any) {
-        if snake.movingDirection != .TOP{
-            snake.movingDirection = .DOWN
-        }
-        updateField()
+        processTapping(currentDir: .DOWN, oppositeDir: .TOP)
     }
     
 }
