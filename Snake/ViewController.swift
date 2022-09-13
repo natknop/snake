@@ -38,12 +38,14 @@ enum SnakePartType{
     case TAIL
 }
 
+
 enum MovingDirection{
     case TOP
     case LEFT
     case RIGHT
     case DOWN
 }
+
 
 class SnakePart {
     var nextSnakePart: SnakePart?
@@ -256,6 +258,11 @@ class ViewController: UIViewController {
         UIGraphicsEndImageContext()
     }
     
+    func updateField(){
+        snake.move(previousPartDirection: snake.movingDirection!)
+        drawGameField()
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
@@ -266,37 +273,32 @@ class ViewController: UIViewController {
         drawGameField()
     }
     
-    
     @IBAction func topMoveTapped(_ sender: Any) {
         if snake.movingDirection != .DOWN{
             snake.movingDirection = .TOP
-            snake.move(previousPartDirection: MovingDirection.TOP)
-            drawGameField()
         }
+        updateField()
     }
     
     @IBAction func leftMoveTapped(_ sender: Any) {
         if snake.movingDirection != .RIGHT{
             snake.movingDirection = .LEFT
-            snake.move(previousPartDirection: MovingDirection.LEFT)
-            drawGameField()
         }
+        updateField()
     }
     
     @IBAction func rightMoveTapped(_ sender: Any) {
         if snake.movingDirection != .LEFT{
             snake.movingDirection = .RIGHT
-            snake.move(previousPartDirection: MovingDirection.RIGHT)
-            drawGameField()
         }
+        updateField()
     }
     
     @IBAction func downMoveTapped(_ sender: Any) {
         if snake.movingDirection != .TOP{
             snake.movingDirection = .DOWN
-            snake.move(previousPartDirection: MovingDirection.DOWN)
-            drawGameField()
         }
+        updateField()
     }
     
 }
