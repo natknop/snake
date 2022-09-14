@@ -89,6 +89,7 @@ class ViewController: UIViewController {
     }
     
     func initField(){
+        // TODO: move UIImage reading into a separate method
         let singleSquare: UIImage? = UIImage(named: "snake_field_square")
         
         guard
@@ -208,6 +209,8 @@ class ViewController: UIViewController {
     }
     
     func hasSnakeIntersection(oldSnakePosition: Point, newSnakePosition: Point) -> Bool{
+        // TODO: move this check into the SnakeUtils file
+        // TODO: move snakePositions update into moveSnake method
         snakePositions.remove(tailPrevPositionPoint)
         
         if snakePositions.contains(headPositionPoint){
@@ -240,13 +243,18 @@ class ViewController: UIViewController {
         
         hasSnakeIntersection(tailPreviousPosition)
         
+        
     }
     
     func runGame(){
         var workItem: DispatchWorkItem? = DispatchWorkItem {
             while self.isGameRunning{
                 DispatchQueue.main.async {
+                    // TODO: add moving snake
+                    // TODO: check if game is over
+                    // TODO: init food if needed 
                     self.drawGameField()
+                    
                     self.isTapped = false
                 }
                 Thread.sleep(forTimeInterval: self.sleepInterval)
@@ -261,6 +269,7 @@ class ViewController: UIViewController {
     
     func processTapping(currentDir: MovingDirection, oppositeDir: MovingDirection){
         if isTapped == false{
+            // TODO: remove moving snake,
             isTapped = true
             if snake.movingDirection != oppositeDir{
                 snake.movingDirection = currentDir

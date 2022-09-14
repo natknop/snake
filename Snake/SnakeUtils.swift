@@ -71,6 +71,8 @@ func mod(_ left: Int, _ right: Int) -> Int {
 }
 
 func genSnakeNewPosition(previousPosition: [CGFloat], movingDirection: MovingDirection?, fieldSize: CGFloat) -> [CGFloat]{
+    
+    // TODO: process field Size param
     var currentPosition = previousPosition
     switch movingDirection{
     case .RIGHT:
