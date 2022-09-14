@@ -115,6 +115,7 @@
                     </view>
                     <connections>
                         <outlet property="gameField" destination="zvM-qL-o58" id="RIS-ia-CmJ"/>
+                        <outlet property="gameOverStack" destination="oab-9s-oth" id="dDF-A1-0vp"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>

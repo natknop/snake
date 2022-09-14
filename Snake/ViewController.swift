@@ -31,78 +31,6 @@ extension UIImage {
     }
 }
 
-
-struct Point: Hashable{
-    let x: CGFloat
-    let y: CGFloat
-}
-
-enum SnakePartType{
-    case HEAD
-    case BODY
-    case TAIL
-}
-
-
-enum MovingDirection{
-    case TOP
-    case LEFT
-    case RIGHT
-    case DOWN
-}
-
-
-class SnakePart {
-    var nextSnakePart: SnakePart?
-    var snakePartType: SnakePartType?
-    var relativePosition: [CGFloat] = []
-    var movingDirection: MovingDirection?
-    
-    init(snakePartType partType: SnakePartType,
-         positionOnTheField pos: [CGFloat],
-         movingDirection direction: MovingDirection,
-         nextSnakePart nextPart: SnakePart? = nil){
-        
-        snakePartType = partType
-        movingDirection = direction
-        nextSnakePart = nextPart
-        relativePosition = pos
-    }
-    
-    func genNewPosition() -> [CGFloat]{
-        var currentPosition = relativePosition
-        switch movingDirection{
-        case .RIGHT:
-            currentPosition[0] += 1
-        case .DOWN:
-            currentPosition[1] += 1
-        case .LEFT:
-            currentPosition[0] -= 1
-        case .TOP:
-            currentPosition[1] -= 1
-        case .none:
-            break
-        }
-        return currentPosition
-    }
-    
-    func move(previousPartDirection prevPartDir: MovingDirection) -> [CGFloat]{
-        let currentPosition = relativePosition
-        let prevDir = movingDirection!
-        var tailPosition: [CGFloat] = []
-        
-        relativePosition = genNewPosition()
-        movingDirection = prevPartDir
-        if nextSnakePart != nil{
-            tailPosition = nextSnakePart!.move(previousPartDirection: prevDir)
-        }else{
-            tailPosition = currentPosition
-        }
-        return tailPosition
-    }
-}
-
-
 class ViewController: UIViewController {
     
     var fieldBackground: UIImage!
@@ -117,7 +45,10 @@ class ViewController: UIViewController {
     var snake: SnakePart!
     
     var isGameRunning: Bool = false
+    var isTapped: Bool = false
+    let sleepInterval = 1.0
     
+    @IBOutlet weak var gameOverStack: UIStackView!
     @IBOutlet weak var gameField: UIImageView!
     
     func getMinFieldSize() -> Int{
@@ -276,25 +207,25 @@ class ViewController: UIViewController {
         UIGraphicsEndImageContext()
     }
     
-    func updateField(){
-        let tailPreviousPosition: [CGFloat] = snake.move(previousPartDirection: snake.movingDirection!)
-        let tailPrevPositionPoint: Point = Point(x: tailPreviousPosition[0], y: tailPreviousPosition[1])
+    func hasSnakeIntersection(oldSnakePosition: Point, newSnakePosition: Point) -> Bool{
         snakePositions.remove(tailPrevPositionPoint)
         
-        let headPositionPoint: Point = Point(x: snake.relativePosition[0], y: snake.relativePosition[1])
         if snakePositions.contains(headPositionPoint){
             isGameRunning = false
         }
         else{
             snakePositions.insert(headPositionPoint)
         }
-        
-        drawGameField()
     }
+    
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
+        /// gameOverStack.opa
+        gameOverStack.isHidden = true
+        
         initField()
         initSnake()
         initFood()
@@ -302,11 +233,23 @@ class ViewController: UIViewController {
         drawGameField()
     }
     
+    func moveSnake(){
+        let tailPreviousPosition: [CGFloat] = snake.move(previousPartDirection: snake.movingDirection!)
+        let oldSnakePosition = getSnakeOldPosition(tailPreviousPosition)
+        let newSnakePosition = getSnakeNewPosition()
+        
+        hasSnakeIntersection(tailPreviousPosition)
+        
+    }
+    
     func runGame(){
         var workItem: DispatchWorkItem? = DispatchWorkItem {
             while self.isGameRunning{
-                DispatchQueue.main.async { self.updateField() }
-                Thread.sleep(forTimeInterval: 1)
+                DispatchQueue.main.async {
+                    self.drawGameField()
+                    self.isTapped = false
+                }
+                Thread.sleep(forTimeInterval: self.sleepInterval)
             }
         }
             
@@ -317,12 +260,23 @@ class ViewController: UIViewController {
     }
     
     func processTapping(currentDir: MovingDirection, oppositeDir: MovingDirection){
-        if snake.movingDirection != oppositeDir{
-            snake.movingDirection = currentDir
-        }
-        if isGameRunning != true {
-            isGameRunning = true
-            runGame()
+        if isTapped == false{
+            isTapped = true
+            if snake.movingDirection != oppositeDir{
+                snake.movingDirection = currentDir
+                
+                let tailPreviousPosition: [CGFloat] = snake.move(previousPartDirection: snake.movingDirection!)
+                let oldSnakePosition = getSnakeOldPosition(tailPreviousPosition)
+                let newSnakePosition = getSnakeNewPosition()
+                
+                checkSnakeIntersection(tailPreviousPosition)
+                
+            }
+            
+            if isGameRunning != true {
+                isGameRunning = true
+                runGame()
+            }
         }
     }
     
