@@ -43,6 +43,7 @@ class ViewController: UIViewController {
     var snakeTailImage: UIImage!
     var snakeBodyTurningImage: UIImage!
     var snakePositions: Set<Point>!
+    var growSnake: Bool = false
     
     var snake: SnakePart!
     
@@ -53,13 +54,12 @@ class ViewController: UIViewController {
     
     var isGameRunning: Bool = false
     var isTapped: Bool = false
-    let sleepInterval = 0.5
+    let sleepInterval = 0.1
     
     @IBOutlet weak var gameOverStack: UIStackView!
     @IBOutlet weak var gameField: UIImageView!
     
     func initImages(){
-        // TODO: add turning body part
         snakeHeadImage = UIImage(named: "snake_head_right")
         snakeBodyImage = UIImage(named: "snake_body_right")
         snakeTailImage = UIImage(named: "snake_tail_right")
@@ -166,7 +166,7 @@ class ViewController: UIViewController {
     
     func getSnakePartImage(_ snakePart: SnakePart) -> UIImage?{
         var snakePartImage: UIImage?
-        
+        // TODO: add turning snake part
         switch snakePart.snakePartType{
         case .TAIL:
             snakePartImage = snakeTailImage
@@ -236,8 +236,6 @@ class ViewController: UIViewController {
                 width: cellSize,
                 height: cellSize
             )
-            
-            // TODO: get food image
             snakeFoodImage!.draw(in: foodRect)
         }
         
@@ -249,6 +247,7 @@ class ViewController: UIViewController {
     func restartGame(){
         isTapped = false
         isGameRunning = false
+        growSnake = false
         
         initSnake()
         initFood()
@@ -265,8 +264,10 @@ class ViewController: UIViewController {
         restartGame()
     }
     
-    func updateSnakePositions(_ oldSnakePosition: Point, _ newSnakePosition: Point){
-        snakePositions.remove(oldSnakePosition)
+    func updateSnakePositions(_ oldSnakePosition: Point?, _ newSnakePosition: Point){
+        if oldSnakePosition != nil{
+            snakePositions.remove(oldSnakePosition!)
+        }
         snakePositions.insert(newSnakePosition)
     }
     
@@ -275,17 +276,25 @@ class ViewController: UIViewController {
         restartGame()
     }
     
-    func moveSnake() -> (Point, Point){
-        let tailPreviousPosition: [CGFloat] = snake.move(previousPartDirection: snake.movingDirection!, fieldSize: fieldSize)
-        let oldSnakePosition = getSnakeOldPosition(tailPreviousPosition)
-        let newSnakePosition = getSnakeNewPosition(snake: snake)
+    func moveSnake() -> (Point?, Point){
+        let tailPreviousPosition: [CGFloat]? = snake.move(previousPartDirection: snake.movingDirection!,
+                                                          fieldSize: fieldSize,
+                                                          growSnake: growSnake)
+        let newSnakePosition = snake.getSnakePosition()
+        var oldSnakePosition: Point?
+        if growSnake{
+            growSnake = false
+        }
+        else{
+            oldSnakePosition = getSnakeOldPosition(tailPreviousPosition!)
+        }
         
         return (oldSnakePosition, newSnakePosition)
     }
     
     func processFood(){
         if currentFoodTick <= 0{
-            var newFood: Point? = genFood()
+            let newFood: Point? = genFood()
             if newFood != nil{
                 food.insert(newFood!)
             }
@@ -293,6 +302,10 @@ class ViewController: UIViewController {
         }else{
             currentFoodTick -= 1
         }
+    }
+    
+    func hasSnakeFoodIntersection() -> Bool{
+        return food.contains(snake.getSnakePosition())
     }
     
     func runGame(){
@@ -304,10 +317,13 @@ class ViewController: UIViewController {
                                             newSnakePosition: newSnakePosition,
                                             snakePositions: self.snakePositions){
                         self.stopGame()
-                        // TODO: process intersaction with food
-                        // TODO: add turning snake part
                     }else{
                         self.updateSnakePositions(oldSnakePosition, newSnakePosition)
+                        if self.hasSnakeFoodIntersection(){
+                            self.food.remove(self.snake.getSnakePosition())
+                            self.growSnake = true
+                        }
+                        
                         self.processFood()
                         
                         self.drawGameField()

@@ -46,19 +46,29 @@ class SnakePart {
         relativePosition = pos
     }
     
-    func move(previousPartDirection prevPartDir: MovingDirection, fieldSize: CGFloat) -> [CGFloat]{
-        let currentPosition = relativePosition
+    func move(previousPartDirection prevPartDir: MovingDirection, fieldSize: CGFloat, growSnake: Bool) -> [CGFloat]?{
+        let prevPosition = relativePosition
         let prevDir = movingDirection!
-        var tailPosition: [CGFloat] = []
+        var tailPosition: [CGFloat]?
         
         relativePosition = genSnakeNewPosition(previousPosition: relativePosition, movingDirection: movingDirection, fieldSize: fieldSize)
         movingDirection = prevPartDir
-        if nextSnakePart != nil{
-            tailPosition = nextSnakePart!.move(previousPartDirection: prevDir, fieldSize: fieldSize)
-        }else{
-            tailPosition = currentPosition
+        
+        if growSnake == false{
+            if nextSnakePart != nil{
+                tailPosition = nextSnakePart!.move(previousPartDirection: prevDir, fieldSize: fieldSize, growSnake: false)
+            }else{
+                tailPosition = prevPosition
+            }
+        }
+        else{
+            addNewSnakePart(prevSnakePart: self, partType: SnakePartType.BODY, position: prevPosition, direction: prevDir)
         }
         return tailPosition
+    }
+    
+    func getSnakePosition() -> Point{
+        return Point(x: relativePosition[0], y: relativePosition[1])
     }
 }
 
@@ -92,10 +102,16 @@ func getSnakeOldPosition(_ tailPreviousPosition: [CGFloat]) -> Point{
     return Point(x: tailPreviousPosition[0], y: tailPreviousPosition[1])
 }
 
-func getSnakeNewPosition(snake: SnakePart) -> Point{
-    return Point(x: snake.relativePosition[0], y: snake.relativePosition[1])
+func hasSnakeIntersection(oldSnakePosition: Point?, newSnakePosition: Point, snakePositions: Set<Point>) -> Bool{
+    return snakePositions.contains(newSnakePosition) && (oldSnakePosition == nil || oldSnakePosition != newSnakePosition)
 }
 
-func hasSnakeIntersection(oldSnakePosition: Point, newSnakePosition: Point, snakePositions: Set<Point>) -> Bool{
-    return oldSnakePosition == newSnakePosition || snakePositions.contains(newSnakePosition)
+func addNewSnakePart(prevSnakePart: SnakePart, partType: SnakePartType, position: [CGFloat], direction: MovingDirection){
+    let newBodySnakePart: SnakePart = SnakePart(
+        snakePartType: partType,
+        positionOnTheField: position,
+        movingDirection: direction,
+        nextSnakePart: prevSnakePart.nextSnakePart
+    )
+    prevSnakePart.nextSnakePart = newBodySnakePart
 }
