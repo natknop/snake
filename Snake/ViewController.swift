@@ -42,8 +42,12 @@ class ViewController: UIViewController {
     var snakeBodyImage: UIImage!
     var snakeTailImage: UIImage!
     var snakeBodyTurningImage: UIImage!
+    var snakePartTypeToImage: [SnakePartType: UIImage]!
+    var snakeMovingDirToRadians: [MovingDirection: Float]!
     var snakePositions: Set<Point>!
     var growSnake: Bool = false
+    var snakeBaseTurningRotationAngle: [MovingDirection: Double]!
+    var snakeAdditionToTurningRotationAngle: [MovingDirection: Double]!
     
     var snake: SnakePart!
     
@@ -166,35 +170,28 @@ class ViewController: UIViewController {
     
     func getSnakePartImage(_ snakePart: SnakePart) -> UIImage?{
         var snakePartImage: UIImage?
-        // TODO: add turning snake part
-        switch snakePart.snakePartType{
-        case .TAIL:
-            snakePartImage = snakeTailImage
-        case .BODY:
-            snakePartImage = snakeBodyImage
-        case .HEAD:
-            snakePartImage = snakeHeadImage
-        case .none:
-            break
-        }
         
-        guard snakePartImage != nil else{
-            return nil
+        if snakePart.nextSnakePart != nil
+            && snakePart.movingDirection != snakePart.nextSnakePart!.movingDirection
+            && snakePart.snakePartType == .BODY{
+            
+            snakePartImage = snakeBodyTurningImage
+            
+            let baseRotationAngle: Double = snakeBaseTurningRotationAngle[snakePart.nextSnakePart!.movingDirection!]!
+            let additionToRotationAngle: Double = snakeAdditionToTurningRotationAngle[snakePart.movingDirection!]!
+            let baseSign: Double = ((1.5 - baseRotationAngle) < 0 ? -1 : 1)
+            let baseRotAnglRadians: Float = Float((baseRotationAngle + 1/2) * .pi/2)
+            let additRotAnglRadians: Float = Float(.pi/4 * additionToRotationAngle * baseSign)
+            let radiansToRotate = baseRotAnglRadians + additRotAnglRadians
+            snakePartImage = snakePartImage!.rotate(radians: radiansToRotate)
+            
+        }else{
+            snakePartImage = snakePartTypeToImage[snakePart.snakePartType!]
+            guard snakePartImage != nil else{
+                return nil
+            }            
+            snakePartImage = snakePartImage!.rotate(radians: snakeMovingDirToRadians[snakePart.movingDirection!]!)
         }
-        
-        switch snakePart.movingDirection{
-        case .RIGHT:
-            break
-        case .DOWN:
-            snakePartImage = snakePartImage!.rotate(radians: .pi/2)
-        case .LEFT:
-            snakePartImage = snakePartImage!.rotate(radians: .pi)
-        case .TOP:
-            snakePartImage = snakePartImage!.rotate(radians: -1 * (.pi/2))
-        case .none:
-            snakePartImage = nil
-        }
-        
         
         return snakePartImage
     }
@@ -259,6 +256,32 @@ class ViewController: UIViewController {
         gameOverStack.isHidden = true
         
         initImages()
+        snakePartTypeToImage = [
+           .TAIL: snakeTailImage!,
+           .BODY: snakeBodyImage!,
+           .HEAD: snakeHeadImage!
+        ]
+        snakeMovingDirToRadians = [
+            .RIGHT: 0,
+            .DOWN: .pi/2,
+            .LEFT: .pi,
+            .TOP: -1 * (.pi/2)
+        ]
+        
+        // Constants for rotation angle calculation (of snakeBodyTurningImage)
+        snakeBaseTurningRotationAngle = [
+            MovingDirection.TOP: 0,
+            MovingDirection.DOWN: 2,
+            MovingDirection.LEFT: 3,
+            MovingDirection.RIGHT: 1
+        ]
+        snakeAdditionToTurningRotationAngle = [
+            MovingDirection.TOP: 1,
+            MovingDirection.DOWN: -1,
+            MovingDirection.LEFT: 1,
+            MovingDirection.RIGHT: -1
+        ]
+        
         initField()
         
         restartGame()
