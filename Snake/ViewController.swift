@@ -59,8 +59,11 @@ class ViewController: UIViewController {
     var isGameRunning: Bool = false
     var isTapped: Bool = false
     let sleepInterval = 0.5
-    
-    @IBOutlet weak var gameOverStack: UIStackView!
+
+    @IBOutlet weak var messageLabel: UILabel!
+    let gameOverMessage: String = "Game over!"
+    let winMessage: String = "You win!"
+    @IBOutlet weak var messageStack: UIStackView!
     @IBOutlet weak var gameField: UIImageView!
     
     func initImages(){
@@ -130,7 +133,6 @@ class ViewController: UIViewController {
         let fieldMinSize: Int = getMinFieldSize()
         cellSize = singleSquare!.size.width
         let numCellRepeated: Int = calcNumCellRepeated(Int(cellSize), fieldMinSize)
-        
         assert(numCellRepeated > 2, "Incorrect number of cells calculated")
         
         fieldBackground = getFieldBackground(numCellRepeated, singleSquare!)
@@ -189,7 +191,7 @@ class ViewController: UIViewController {
             snakePartImage = snakePartTypeToImage[snakePart.snakePartType!]
             guard snakePartImage != nil else{
                 return nil
-            }            
+            }
             snakePartImage = snakePartImage!.rotate(radians: snakeMovingDirToRadians[snakePart.movingDirection!]!)
         }
         
@@ -253,7 +255,7 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        gameOverStack.isHidden = true
+        messageStack.isHidden = true
         
         initImages()
         snakePartTypeToImage = [
@@ -294,8 +296,9 @@ class ViewController: UIViewController {
         snakePositions.insert(newSnakePosition)
     }
     
-    func stopGame(){
-        gameOverStack.isHidden = false
+    func stopGame(message: String){
+        messageLabel.text = message
+        messageStack.isHidden = false
         restartGame()
     }
     
@@ -331,15 +334,27 @@ class ViewController: UIViewController {
         return food.contains(snake.getSnakePosition())
     }
     
+    func isGameCompleted(oldSnakePosition: Point?, newSnakePosition: Point) -> Bool{
+        let oldSnakePositionSize = oldSnakePosition == nil ? 0 : 1
+        let snakeSize: CGFloat = CGFloat(snakePositions.count + 1 - oldSnakePositionSize)
+        
+        let fieldNumOfCells = fieldSize * fieldSize
+        
+        return fieldNumOfCells == snakeSize
+    }
+    
     func runGame(){
         var workItem: DispatchWorkItem? = DispatchWorkItem {
             while self.isGameRunning{
                 DispatchQueue.main.async {
-                    let (oldSnakePosition, newSnakePosition) = self.moveSnake()
+                    let (oldSnakePosition, newSnakePosition) = self.moveSnake() 
                     if hasSnakeIntersection(oldSnakePosition: oldSnakePosition,
                                             newSnakePosition: newSnakePosition,
                                             snakePositions: self.snakePositions){
-                        self.stopGame()
+                        self.stopGame(message: self.gameOverMessage)
+                    }else if self.isGameCompleted(oldSnakePosition: oldSnakePosition,
+                                                  newSnakePosition: newSnakePosition){
+                        self.stopGame(message: self.winMessage)
                     }else{
                         self.updateSnakePositions(oldSnakePosition, newSnakePosition)
                         if self.hasSnakeFoodIntersection(){
@@ -366,8 +381,8 @@ class ViewController: UIViewController {
     func processTapping(currentDir: MovingDirection, oppositeDir: MovingDirection){
         if isTapped == false{
             isTapped = true
-            if gameOverStack.isHidden == false{
-                gameOverStack.isHidden = true
+            if messageStack.isHidden == false{
+                messageStack.isHidden = true
             }
             
             if snake.movingDirection != oppositeDir{

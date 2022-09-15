@@ -72,10 +72,10 @@
                                 </subviews>
                                 <variation key="heightClass=compact" axis="horizontal"/>
                             </stackView>
-                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="oab-9s-oth" userLabel="Game over stack view">
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="oab-9s-oth" userLabel="Message stack view">
                                 <rect key="frame" x="15" y="249.5" width="290" height="69.5"/>
                                 <subviews>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Game over!" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="NWw-2I-rhq">
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Game over!" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="NWw-2I-rhq" userLabel="Message">
                                         <rect key="frame" x="0.0" y="0.0" width="290" height="49"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="41"/>
                                         <nil key="textColor"/>
@@ -115,7 +115,8 @@
                     </view>
                     <connections>
                         <outlet property="gameField" destination="zvM-qL-o58" id="RIS-ia-CmJ"/>
-                        <outlet property="gameOverStack" destination="oab-9s-oth" id="dDF-A1-0vp"/>
+                        <outlet property="messageLabel" destination="NWw-2I-rhq" id="h8u-Ry-TyW"/>
+                        <outlet property="messageStack" destination="oab-9s-oth" id="dDF-A1-0vp"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
