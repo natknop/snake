@@ -54,7 +54,7 @@ class ViewController: UIViewController {
     
     var isGameRunning: Bool = false
     var isTapped: Bool = false
-    let sleepInterval = 0.1
+    let sleepInterval = 0.5
     
     @IBOutlet weak var gameOverStack: UIStackView!
     @IBOutlet weak var gameField: UIImageView!
