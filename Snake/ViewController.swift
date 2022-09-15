@@ -53,7 +53,7 @@ class ViewController: UIViewController {
     
     var isGameRunning: Bool = false
     var isTapped: Bool = false
-    let sleepInterval = 0.7
+    let sleepInterval = 0.5
     
     @IBOutlet weak var gameOverStack: UIStackView!
     @IBOutlet weak var gameField: UIImageView!
@@ -154,9 +154,9 @@ class ViewController: UIViewController {
         ])
     }
     
-    func genFood() -> Point{
+    func genFood() -> Point?{
         let notTakenCells: Set<Point> = allCells.subtracting(snakePositions.union(food))
-        return notTakenCells.randomElement()!
+        return notTakenCells.randomElement()
     }
     
     
@@ -285,7 +285,10 @@ class ViewController: UIViewController {
     
     func processFood(){
         if currentFoodTick <= 0{
-            food.insert(genFood())
+            var newFood: Point? = genFood()
+            if newFood != nil{
+                food.insert(newFood!)
+            }
             currentFoodTick = foodTickInterval
         }else{
             currentFoodTick -= 1
