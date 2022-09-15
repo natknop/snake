@@ -36,13 +36,20 @@ class ViewController: UIViewController {
     var fieldBackground: UIImage!
     var fieldSize: CGFloat!
     var cellSize: CGFloat!
+    var allCells: Set<Point>!
     
     var snakeHeadImage: UIImage!
     var snakeBodyImage: UIImage!
     var snakeTailImage: UIImage!
+    var snakeBodyTurningImage: UIImage!
     var snakePositions: Set<Point>!
     
     var snake: SnakePart!
+    
+    var food: Set<Point>!
+    var snakeFoodImage: UIImage!
+    let foodTickInterval: Int = 4
+    var currentFoodTick: Int = 0 
     
     var isGameRunning: Bool = false
     var isTapped: Bool = false
@@ -52,10 +59,18 @@ class ViewController: UIViewController {
     @IBOutlet weak var gameField: UIImageView!
     
     func initImages(){
+        // TODO: add turning body part
         snakeHeadImage = UIImage(named: "snake_head_right")
         snakeBodyImage = UIImage(named: "snake_body_right")
         snakeTailImage = UIImage(named: "snake_tail_right")
-        assert(snakeHeadImage != nil && snakeBodyImage != nil && snakeTailImage != nil, "Snake parts images not found")
+        snakeBodyTurningImage = UIImage(named: "snake_body_turning")
+        snakeFoodImage = UIImage(named: "snake_food")
+        
+        assert(snakeHeadImage != nil
+               && snakeBodyImage != nil
+               && snakeTailImage != nil
+               && snakeBodyTurningImage != nil
+               && snakeFoodImage != nil, "Snake images not found")
     }
     
     func getMinFieldSize() -> Int{
@@ -95,9 +110,18 @@ class ViewController: UIViewController {
         
     }
     
+    func initAllFieldPoints(_ numCellRepeated: Int){
+        allCells = Set([])
+        for i in 0..<numCellRepeated{
+            for j in 0..<numCellRepeated{
+                allCells.insert(Point(x: CGFloat(i), y: CGFloat(j)))
+            }
+        }
+    }
+    
     func initField(){
         let singleSquare: UIImage? = UIImage(named: "snake_field_square")
-        assert(singleSquare != nil && singleSquare!.size.height == singleSquare!.size.width, "Singke cell image not found")
+        assert(singleSquare != nil && singleSquare!.size.height == singleSquare!.size.width, "Single cell image not found")
         
         let fieldMinSize: Int = getMinFieldSize()
         cellSize = singleSquare!.size.width
@@ -107,6 +131,8 @@ class ViewController: UIViewController {
         
         fieldBackground = getFieldBackground(numCellRepeated, singleSquare!)
         fieldSize = CGFloat(numCellRepeated)
+        
+        initAllFieldPoints(numCellRepeated)
     }
     
     func initSnake(){
@@ -128,8 +154,14 @@ class ViewController: UIViewController {
         ])
     }
     
+    func genFood() -> Point{
+        let notTakenCells: Set<Point> = allCells.subtracting(snakePositions.union(food))
+        return notTakenCells.randomElement()!
+    }
+    
+    
     func initFood(){
-        // TODO: init food
+        food = Set([])
     }
     
     func getSnakePartImage(_ snakePart: SnakePart) -> UIImage?{
@@ -170,6 +202,8 @@ class ViewController: UIViewController {
     func drawGameField(){
         let size = CGSize(width: fieldBackground.size.width, height: fieldBackground.size.height)
         UIGraphicsBeginImageContext(size)
+        
+        // Drawing background
         let fieldRect = CGRect(
           x: 0,
           y: 0,
@@ -178,6 +212,7 @@ class ViewController: UIViewController {
         )
         fieldBackground.draw(in: fieldRect)
 
+        // Drawing snake
         var currentSnakePart = snake
         while currentSnakePart != nil{
             let cellRect = CGRect(
@@ -193,6 +228,20 @@ class ViewController: UIViewController {
             currentSnakePart = currentSnakePart?.nextSnakePart
         }
         
+        // Drawing food
+        for foodPart in food{
+            let foodRect = CGRect(
+                x: foodPart.x * cellSize,
+                y: foodPart.y * cellSize,
+                width: cellSize,
+                height: cellSize
+            )
+            
+            // TODO: get food image
+            snakeFoodImage!.draw(in: foodRect)
+        }
+        
+        // Gathering everything into one image
         gameField.image = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
     }
@@ -208,7 +257,6 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
         gameOverStack.isHidden = true
         
         initImages()
@@ -235,6 +283,15 @@ class ViewController: UIViewController {
         return (oldSnakePosition, newSnakePosition)
     }
     
+    func processFood(){
+        if currentFoodTick <= 0{
+            food.insert(genFood())
+            currentFoodTick = foodTickInterval
+        }else{
+            currentFoodTick -= 1
+        }
+    }
+    
     func runGame(){
         var workItem: DispatchWorkItem? = DispatchWorkItem {
             while self.isGameRunning{
@@ -244,12 +301,15 @@ class ViewController: UIViewController {
                                             newSnakePosition: newSnakePosition,
                                             snakePositions: self.snakePositions){
                         self.stopGame()
+                        // TODO: process intersaction with food
+                        // TODO: add turning snake part
                     }else{
                         self.updateSnakePositions(oldSnakePosition, newSnakePosition)
+                        self.processFood()
+                        
                         self.drawGameField()
                         self.isTapped = false
                     }
-                    // TODO: init food if needed
                 }
                 Thread.sleep(forTimeInterval: self.sleepInterval)
             }
