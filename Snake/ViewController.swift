@@ -34,7 +34,7 @@ extension UIImage {
 class ViewController: UIViewController {
     
     var fieldBackground: UIImage!
-    var fieldSize: Int!
+    var fieldSize: CGFloat!
     var cellSize: CGFloat!
     
     var snakeHeadImage: UIImage!
@@ -46,10 +46,17 @@ class ViewController: UIViewController {
     
     var isGameRunning: Bool = false
     var isTapped: Bool = false
-    let sleepInterval = 1.0
+    let sleepInterval = 0.7
     
     @IBOutlet weak var gameOverStack: UIStackView!
     @IBOutlet weak var gameField: UIImageView!
+    
+    func initImages(){
+        snakeHeadImage = UIImage(named: "snake_head_right")
+        snakeBodyImage = UIImage(named: "snake_body_right")
+        snakeTailImage = UIImage(named: "snake_tail_right")
+        assert(snakeHeadImage != nil && snakeBodyImage != nil && snakeTailImage != nil, "Snake parts images not found")
+    }
     
     func getMinFieldSize() -> Int{
         let minSize: Int = Int(min(
@@ -89,15 +96,8 @@ class ViewController: UIViewController {
     }
     
     func initField(){
-        // TODO: move UIImage reading into a separate method
         let singleSquare: UIImage? = UIImage(named: "snake_field_square")
-        
-        guard
-            singleSquare != nil,
-            singleSquare!.size.height == singleSquare!.size.width
-        else{
-            return
-        }
+        assert(singleSquare != nil && singleSquare!.size.height == singleSquare!.size.width, "Singke cell image not found")
         
         let fieldMinSize: Int = getMinFieldSize()
         cellSize = singleSquare!.size.width
@@ -106,30 +106,19 @@ class ViewController: UIViewController {
         assert(numCellRepeated > 2, "Incorrect number of cells calculated")
         
         fieldBackground = getFieldBackground(numCellRepeated, singleSquare!)
-        fieldSize = numCellRepeated
+        fieldSize = CGFloat(numCellRepeated)
     }
     
     func initSnake(){
-        snakeHeadImage = UIImage(named: "snake_head_right")
-        snakeBodyImage = UIImage(named: "snake_body_right")
-        snakeTailImage = UIImage(named: "snake_tail_right")
-        guard
-            snakeHeadImage != nil,
-            snakeBodyImage != nil,
-            snakeTailImage != nil
-        else{
-            return
-        }
-        
         let snakeTail: SnakePart = SnakePart(
             snakePartType: SnakePartType.TAIL,
-            positionOnTheField: [CGFloat(fieldSize/2), CGFloat(fieldSize/2)],
+            positionOnTheField: [(fieldSize/2).rounded(.down), (fieldSize/2).rounded(.down)],
             movingDirection: MovingDirection.RIGHT,
             nextSnakePart: nil
         )
         snake = SnakePart(
             snakePartType: SnakePartType.HEAD,
-            positionOnTheField: [CGFloat(fieldSize/2 + 1), CGFloat(fieldSize/2)],
+            positionOnTheField: [(fieldSize/2).rounded(.down) + 1, (fieldSize/2).rounded(.down)],
             movingDirection: MovingDirection.RIGHT,
             nextSnakePart: snakeTail
         )
@@ -208,54 +197,59 @@ class ViewController: UIViewController {
         UIGraphicsEndImageContext()
     }
     
-    func hasSnakeIntersection(oldSnakePosition: Point, newSnakePosition: Point) -> Bool{
-        // TODO: move this check into the SnakeUtils file
-        // TODO: move snakePositions update into moveSnake method
-        snakePositions.remove(tailPrevPositionPoint)
+    func restartGame(){
+        isTapped = false
+        isGameRunning = false
         
-        if snakePositions.contains(headPositionPoint){
-            isGameRunning = false
-        }
-        else{
-            snakePositions.insert(headPositionPoint)
-        }
+        initSnake()
+        initFood()
+        drawGameField()
     }
-    
-    
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
-        /// gameOverStack.opa
         gameOverStack.isHidden = true
         
+        initImages()
         initField()
-        initSnake()
-        initFood()
         
-        drawGameField()
+        restartGame()
     }
     
-    func moveSnake(){
-        let tailPreviousPosition: [CGFloat] = snake.move(previousPartDirection: snake.movingDirection!)
+    func updateSnakePositions(_ oldSnakePosition: Point, _ newSnakePosition: Point){
+        snakePositions.remove(oldSnakePosition)
+        snakePositions.insert(newSnakePosition)
+    }
+    
+    func stopGame(){
+        gameOverStack.isHidden = false
+        restartGame()
+    }
+    
+    func moveSnake() -> (Point, Point){
+        let tailPreviousPosition: [CGFloat] = snake.move(previousPartDirection: snake.movingDirection!, fieldSize: fieldSize)
         let oldSnakePosition = getSnakeOldPosition(tailPreviousPosition)
-        let newSnakePosition = getSnakeNewPosition()
+        let newSnakePosition = getSnakeNewPosition(snake: snake)
         
-        hasSnakeIntersection(tailPreviousPosition)
-        
-        
+        return (oldSnakePosition, newSnakePosition)
     }
     
     func runGame(){
         var workItem: DispatchWorkItem? = DispatchWorkItem {
             while self.isGameRunning{
                 DispatchQueue.main.async {
-                    // TODO: add moving snake
-                    // TODO: check if game is over
-                    // TODO: init food if needed 
-                    self.drawGameField()
-                    
-                    self.isTapped = false
+                    let (oldSnakePosition, newSnakePosition) = self.moveSnake()
+                    if hasSnakeIntersection(oldSnakePosition: oldSnakePosition,
+                                            newSnakePosition: newSnakePosition,
+                                            snakePositions: self.snakePositions){
+                        self.stopGame()
+                    }else{
+                        self.updateSnakePositions(oldSnakePosition, newSnakePosition)
+                        self.drawGameField()
+                        self.isTapped = false
+                    }
+                    // TODO: init food if needed
                 }
                 Thread.sleep(forTimeInterval: self.sleepInterval)
             }
@@ -269,17 +263,13 @@ class ViewController: UIViewController {
     
     func processTapping(currentDir: MovingDirection, oppositeDir: MovingDirection){
         if isTapped == false{
-            // TODO: remove moving snake,
             isTapped = true
+            if gameOverStack.isHidden == false{
+                gameOverStack.isHidden = true
+            }
+            
             if snake.movingDirection != oppositeDir{
                 snake.movingDirection = currentDir
-                
-                let tailPreviousPosition: [CGFloat] = snake.move(previousPartDirection: snake.movingDirection!)
-                let oldSnakePosition = getSnakeOldPosition(tailPreviousPosition)
-                let newSnakePosition = getSnakeNewPosition()
-                
-                checkSnakeIntersection(tailPreviousPosition)
-                
             }
             
             if isGameRunning != true {

@@ -46,15 +46,15 @@ class SnakePart {
         relativePosition = pos
     }
     
-    func move(previousPartDirection prevPartDir: MovingDirection) -> [CGFloat]{
+    func move(previousPartDirection prevPartDir: MovingDirection, fieldSize: CGFloat) -> [CGFloat]{
         let currentPosition = relativePosition
         let prevDir = movingDirection!
         var tailPosition: [CGFloat] = []
         
-        relativePosition = genSnakeNewPosition(previousPosition: relativePosition, movingDirection: movingDirection)
+        relativePosition = genSnakeNewPosition(previousPosition: relativePosition, movingDirection: movingDirection, fieldSize: fieldSize)
         movingDirection = prevPartDir
         if nextSnakePart != nil{
-            tailPosition = nextSnakePart!.move(previousPartDirection: prevDir)
+            tailPosition = nextSnakePart!.move(previousPartDirection: prevDir, fieldSize: fieldSize)
         }else{
             tailPosition = currentPosition
         }
@@ -65,24 +65,23 @@ class SnakePart {
 
 // Utils
 
-func mod(_ left: Int, _ right: Int) -> Int {
-   let mod = left % right
-   return mod >= 0 ? mod : mod + right
+func mod(_ left: CGFloat, _ right: CGFloat) -> CGFloat {
+    let modValue = left.truncatingRemainder(dividingBy: right)
+    return modValue >= 0 ? modValue : modValue + right
 }
 
 func genSnakeNewPosition(previousPosition: [CGFloat], movingDirection: MovingDirection?, fieldSize: CGFloat) -> [CGFloat]{
     
-    // TODO: process field Size param
     var currentPosition = previousPosition
     switch movingDirection{
     case .RIGHT:
-        currentPosition[0] += 1
+        currentPosition[0] = mod(currentPosition[0] + 1, fieldSize)
     case .DOWN:
-        currentPosition[1] += 1
+        currentPosition[1] = mod(currentPosition[1] + 1, fieldSize)
     case .LEFT:
-        currentPosition[0] -= 1
+        currentPosition[0] = mod(currentPosition[0] - 1, fieldSize)
     case .TOP:
-        currentPosition[1] -= 1
+        currentPosition[1] = mod(currentPosition[1] - 1, fieldSize)
     case .none:
         break
     }
@@ -95,4 +94,8 @@ func getSnakeOldPosition(_ tailPreviousPosition: [CGFloat]) -> Point{
 
 func getSnakeNewPosition(snake: SnakePart) -> Point{
     return Point(x: snake.relativePosition[0], y: snake.relativePosition[1])
+}
+
+func hasSnakeIntersection(oldSnakePosition: Point, newSnakePosition: Point, snakePositions: Set<Point>) -> Bool{
+    return oldSnakePosition == newSnakePosition || snakePositions.contains(newSnakePosition)
 }
